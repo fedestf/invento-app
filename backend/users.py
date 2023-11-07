@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,HTTPException
 from pydantic import BaseModel
 
 app = FastAPI() #Arrancar backend : uvicorn main:app --reload y detener : CTRL + C
@@ -14,32 +14,33 @@ users_list = [User(id = 1, name = "Fede", surname = "Lopez", age = 20), #Instanc
               User(id = 2, name = "Raul", surname = "Lopetegui", age = 21),
               User(id = 3, name = "Dai", surname = "Lezcano", age = 22)]
 
-@app.get("/users")
+@app.get("/users", status_code = 200)
 async def users():
     return users_list
 
 #Busqueda por Path
-@app.get("/users/{id}")
+@app.get("/users/{id}",status_code = 200)
 async def user_path(id : int):
     return search_user(id)
 
 
 #Retornar informacion por query
-@app.get("/userquery/")
+@app.get("/userquery/",status_code = 200)
 async def user_query(id : int):
     return search_user(id)
 
 
-@app.post("/new-user")
+@app.post("/new-user", status_code = 201)
 async def new_user(user : User):
     
     if type(search_user(user.id)) == User:
-        return {"Error": "El usuario ya existe."}
+       raise HTTPException(status_code = 204, detail = "El usuario ya existe")
+
     
     users_list.append(user)
     return user
 
-@app.put("/modify-user") # para todo el registro se usa PUT y para alguna parte del dato #PATCH
+@app.put("/modify-user",status_code = 200) # para todo el registro se usa PUT y para alguna parte del dato #PATCH
 async def modify_user(user : User):
     
     found = False
@@ -50,20 +51,21 @@ async def modify_user(user : User):
                 found = True
     
     if found == False:
-        return {"Error" : "El usuario no se ha encontrado"}
+        raise HTTPException(status_code = 204, detail = "El usuario no se ha encontrado")        
     
     return user
 
-@app.delete("/delete-user/{id}")
+@app.delete("/delete-user/{id}", status_code = 200)
 async def delete_user(id : int):
     deleted = False  
     for index,saved_user in enumerate(users_list):
             if saved_user.id == id :
                 del users_list[index]
                 deleted = True
+    
     if deleted == False:
-        return {"Error" : "Usuario no encontrado."}
-    return {"Ok": "Usuario eliminado"}
+        raise HTTPException(status_code = 204, detail = "El usuario no se ha encontrado")
+
 
 def search_user(id : int):
     try :
