@@ -1,7 +1,7 @@
 from fastapi import APIRouter,HTTPException
 from pydantic import BaseModel
 
-router = APIRouter() #Arrancar backend : uvicorn main:app --reload y detener : CTRL + C
+router = APIRouter(tags=["users"]) #Arrancar backend : uvicorn main:app --reload y detener : CTRL + C
 
 #Entidad usuario
 class User(BaseModel):
